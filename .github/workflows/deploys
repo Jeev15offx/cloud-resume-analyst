@@ -1,0 +1,23 @@
+name: Deploy Static Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate HTML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tidy
+          tidy -e index.html
+
+      - name: Deployment Confirmation
+        run: echo "Deployment validation complete."
