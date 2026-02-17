@@ -20,4 +20,4 @@ jobs:
           tidy -e index.html
 
       - name: Deployment Confirmation
-        run: echo "Deployment validation complete.
+        run: echo "Deployment validation complete."
