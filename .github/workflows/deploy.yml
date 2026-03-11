@@ -28,7 +28,7 @@ jobs:
 
 
   deploy: 
-    needs: Validate
+    needs: validate
     runs-on: ubuntu-latest        
 
 
