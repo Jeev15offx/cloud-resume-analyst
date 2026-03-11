@@ -24,7 +24,7 @@ jobs:
           tidy -e index.html
 
   deploy: 
-    needs: validate
+    needs: Validate
     runs-on: ubuntu-latest        
 
 
