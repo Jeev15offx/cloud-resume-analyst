@@ -4,13 +4,12 @@ on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,15 +25,13 @@ jobs:
       - name: Validate CSS
         run: tidy -e index.html
 
-
-  deploy: 
+  deploy:
     needs: validate
-    runs-on: ubuntu-latest        
-
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        
+
       - name: Deployment Confirmation
         run: echo "Deployment validation complete."
