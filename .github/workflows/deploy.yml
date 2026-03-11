@@ -23,5 +23,9 @@ jobs:
           sudo apt-get install -y tidy
           tidy -e index.html
 
+  deploy: 
+    needs: validate
+    runs-on: ubuntu-latest        
+
       - name: Deployment Confirmation
         run: echo "Deployment validation complete."
