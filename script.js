@@ -15,7 +15,7 @@ function analyzeResume() {
     // Stopwords
     let stopwords = ["the","is","and","a","an","with","for","to","of","in","on","at","by","from","looking","should","have"];
 
-    // High-value technical skills
+    // Tech skills list
     let techSkills = [
         "java","python","javascript","html","css","react","node",
         "aws","cloud","docker","kubernetes","git","sql","mysql"
@@ -24,34 +24,39 @@ function analyzeResume() {
     // Word count
     let wordCount = resumeText.split(/\s+/).length;
 
-    // Resume keywords
+    // Resume section validation
     let keywords = ["project", "skills", "experience", "education"];
     let matchedKeywords = keywords.filter(word => resumeText.includes(word));
 
-    // Job words filtered
+    // Job words
     let jobWords = jobText.split(/\s+/)
         .filter(word => word.length > 2 && !stopwords.includes(word));
 
     let uniqueJobWords = [...new Set(jobWords)];
 
-    // Matching logic
+    // Matches
     let matchedWords = uniqueJobWords.filter(word => resumeText.includes(word));
 
-    // Separate technical matches
-    let matchedTech = matchedWords.filter(word => techSkills.includes(word));
-    let matchedGeneric = matchedWords.filter(word => !techSkills.includes(word));
+    // Split matches
+    let techWords = uniqueJobWords.filter(word => techSkills.includes(word));
+    let matchedTech = techWords.filter(word => resumeText.includes(word));
 
-    // Weighted scoring
-    let techScore = matchedTech.length * 2;     // high weight
-    let genericScore = matchedGeneric.length * 1;
+    let genericWords = uniqueJobWords.filter(word => !techSkills.includes(word));
+    let matchedGeneric = genericWords.filter(word => resumeText.includes(word));
 
-    let totalPossible = uniqueJobWords.length * 2;
-
-    let matchScore = totalPossible > 0
-        ? Math.floor(((techScore + genericScore) / totalPossible) * 100)
+    // 🎯 Correct scoring
+    let techMatchPercent = techWords.length > 0
+        ? Math.floor((matchedTech.length / techWords.length) * 100)
         : 0;
 
-    // Resume structure score
+    let overallMatchPercent = uniqueJobWords.length > 0
+        ? Math.floor((matchedWords.length / uniqueJobWords.length) * 100)
+        : 0;
+
+    // Final weighted score
+    let finalScore = Math.floor((techMatchPercent * 0.7) + (overallMatchPercent * 0.3));
+
+    // Resume quality score
     let score = 0;
     let feedback = [];
 
@@ -74,9 +79,11 @@ function analyzeResume() {
     document.getElementById("result").innerHTML = `
         Word Count: ${wordCount} <br>
         Resume Score: ${score} / 5 <br>
-        Job Match: ${matchScore}% <br>
-        🔹 Tech Matches: ${matchedTech.join(", ")} <br>
-        🔸 Other Matches: ${matchedGeneric.join(", ")} <br>
+        Job Match: ${finalScore}% <br><br>
+
+        🔹 Tech Match: ${techMatchPercent}% (${matchedTech.join(", ")}) <br>
+        🔸 Overall Match: ${overallMatchPercent}% <br><br>
+
         Feedback: ${feedback.length ? feedback.join(", ") : "Strong Resume"}
     `;
 }
