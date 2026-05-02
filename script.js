@@ -8,9 +8,12 @@ function analyzeResume() {
         return;
     }
 
-    // Clean text (REMOVE punctuation)
+    // Clean text
     resumeText = resumeText.replace(/[^\w\s]/g, "");
     jobText = jobText.replace(/[^\w\s]/g, "");
+
+    // Stopwords (very important)
+    let stopwords = ["the","is","and","a","an","with","for","to","of","in","on","at","by","from","looking","should","have"];
 
     // Word count
     let wordCount = resumeText.split(/\s+/).length;
@@ -19,11 +22,13 @@ function analyzeResume() {
     let keywords = ["project", "skills", "experience", "education"];
     let matchedKeywords = keywords.filter(word => resumeText.includes(word));
 
-    // Job words
-    let jobWords = jobText.split(/\s+/).filter(word => word.length > 2);
+    // Job words (clean + filter stopwords)
+    let jobWords = jobText.split(/\s+/)
+        .filter(word => word.length > 2 && !stopwords.includes(word));
+
     let uniqueJobWords = [...new Set(jobWords)];
 
-    // Matching logic
+    // Matching
     let matchedJobWords = uniqueJobWords.filter(word => resumeText.includes(word));
 
     let matchScore = 0;
@@ -31,12 +36,7 @@ function analyzeResume() {
         matchScore = Math.floor((matchedJobWords.length / uniqueJobWords.length) * 100);
     }
 
-    // Debug (optional — remove later)
-    console.log("Job Words:", uniqueJobWords);
-    console.log("Matched Words:", matchedJobWords);
-    console.log("Match %:", matchScore);
-
-    // Scoring system
+    // Score system
     let score = 0;
     let feedback = [];
 
@@ -55,11 +55,12 @@ function analyzeResume() {
     if (matchedKeywords.includes("education")) score++;
     else feedback.push("Add education");
 
-    // Output (IMPORTANT FIX: show Job Match clearly)
+    // Output
     document.getElementById("result").innerHTML = `
         Word Count: ${wordCount} <br>
         Resume Score: ${score} / 5 <br>
         Job Match: ${matchScore}% <br>
+        Matched Skills: ${matchedJobWords.join(", ")} <br>
         Feedback: ${feedback.length ? feedback.join(", ") : "Strong Resume"}
     `;
 }
