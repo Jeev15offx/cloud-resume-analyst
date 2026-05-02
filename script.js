@@ -1,46 +1,58 @@
 function analyzeResume() {
 
-    let text = document.getElementById("resume").value.trim();
+    let resumeText = document.getElementById("resume").value.trim().toLowerCase();
+    let jobText = document.getElementById("job").value.trim().toLowerCase();
 
-    if (text.length === 0) {
+    if (resumeText.length === 0) {
         document.getElementById("result").innerText = "Please paste your resume.";
         return;
     }
 
-    let words = text.split(/\s+/);
-    let wordCount = words.length;
+    // Word count
+    let wordCount = resumeText.split(/\s+/).length;
 
-    let lowerText = text.toLowerCase();
-
+    // Resume keywords
     let keywords = ["project", "skills", "experience", "education"];
-    let matchedKeywords = keywords.filter(word => lowerText.includes(word));
+    let matchedKeywords = keywords.filter(word => resumeText.includes(word));
 
+    // Job description matching
+    let jobWords = jobText.split(/\s+/).filter(word => word.length > 3);
+    let uniqueJobWords = [...new Set(jobWords)];
+
+    let matchedJobWords = uniqueJobWords.filter(word => resumeText.includes(word));
+
+    let matchScore = 0;
+    if (uniqueJobWords.length > 0) {
+        matchScore = Math.floor((matchedJobWords.length / uniqueJobWords.length) * 100);
+    }
+
+    // Scoring system
     let score = 0;
     let feedback = [];
 
-    if (wordCount < 80) {
-        feedback.push("Resume is too short");
-    } else if (wordCount > 300) {
-        feedback.push("Resume is too long");
-    } else {
+    if (wordCount >= 80 && wordCount <= 300) {
         score++;
+    } else {
+        feedback.push("Resume length not optimal");
     }
 
     if (matchedKeywords.includes("skills")) score++;
     else feedback.push("Add skills section");
 
     if (matchedKeywords.includes("project")) score++;
-    else feedback.push("Add project section");
+    else feedback.push("Add projects");
 
     if (matchedKeywords.includes("experience")) score++;
-    else feedback.push("Add experience section");
+    else feedback.push("Add experience");
 
     if (matchedKeywords.includes("education")) score++;
-    else feedback.push("Add education details");
+    else feedback.push("Add education");
 
+    // Output
     document.getElementById("result").innerHTML = `
         Word Count: ${wordCount} <br>
-        Score: ${score} / 5 <br>
+        Resume Score: ${score} / 5 <br>
+        Job Match: ${matchScore}% <br>
         Feedback: ${feedback.length ? feedback.join(", ") : "Strong Resume"}
     `;
 }
