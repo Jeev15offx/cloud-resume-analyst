@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cloud Resume Analyst</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <h1>Cloud Resume Analyst</h1>
@@ -14,12 +17,25 @@
     <div class="container">
 
         <h3>Paste Resume</h3>
-        <textarea id="resume" placeholder="Paste your resume here..."></textarea>
+
+        <textarea
+            id="resume"
+            placeholder="Paste your resume here..."
+        ></textarea>
 
         <h3>Paste Job Description</h3>
-        <textarea id="job" placeholder="Paste job description here..."></textarea>
 
-        <button onclick="analyzeResume()">Analyze Resume</button>
+        <textarea
+            id="job"
+            placeholder="Paste the job description here..."
+        ></textarea>
+
+        <button onclick="analyzeResume()">
+            Analyze Resume </button>
+
+         <button onclick="downloadReport()">
+    Download Report    
+        </button>
 
         <div id="result"></div>
 
@@ -28,4 +44,5 @@
     <script src="script.js"></script>
 
 </body>
+
 </html>
