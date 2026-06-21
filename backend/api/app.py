@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(app)
 
 
 @app.route("/")
@@ -27,7 +30,17 @@ def analyze():
         "linux",
         "python",
         "java",
-        "git"
+        "git",
+        "github",
+        "ansible",
+        "prometheus",
+        "grafana",
+        "mysql",
+        "sql",
+        "mongodb",
+        "react",
+        "node",
+        "javascript"
     ]
 
     matched = []
@@ -50,10 +63,46 @@ def analyze():
              (len(matched) + len(missing))) * 100
         )
 
+    roadmap = []
+
+    for i, skill in enumerate(missing):
+        roadmap.append(
+            f"Step {i + 1}: Learn {skill}"
+        )
+
+    strengths = []
+
+    if "aws" in matched:
+        strengths.append("Cloud")
+
+    if "docker" in matched:
+        strengths.append("Containers")
+
+    if "kubernetes" in matched:
+        strengths.append("Orchestration")
+
+    if "python" in matched:
+        strengths.append("Automation")
+
+    if "linux" in matched:
+        strengths.append("System Administration")
+
+    if score >= 80:
+        strength_level = "Strong"
+
+    elif score >= 50:
+        strength_level = "Intermediate"
+
+    else:
+        strength_level = "Beginner"
+
     result = {
         "score": score,
+        "strength_level": strength_level,
         "matched_skills": matched,
-        "missing_skills": missing
+        "missing_skills": missing,
+        "strengths": strengths,
+        "roadmap": roadmap
     }
 
     return jsonify(result)

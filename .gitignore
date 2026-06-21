@@ -2,3 +2,4 @@ sshkey
 sshkey.pub
 *.pem
 *.key
+venv/
