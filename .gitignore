@@ -3,3 +3,12 @@ sshkey.pub
 *.pem
 *.key
 venv/
+__pycache__/
+*.pyc
+
+test.txt
+text2.txt
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
