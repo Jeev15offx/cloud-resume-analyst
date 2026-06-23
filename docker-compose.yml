@@ -1,0 +1,11 @@
+services:
+
+  backend:
+    build:
+      context: ./backend/api
+    container_name: cloud-resume-backend
+
+    ports:
+      - "5000:5000"
+
+    restart: unless-stopped
