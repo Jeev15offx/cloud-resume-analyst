@@ -1,90 +1,79 @@
 name: Deploy Static Site
 
 env:
-FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
-push:
-branches:
-- main
-- phase2-api-integration
+  push:
+    branches:
+      - main
+      - phase2-api-integration
 
-pull_request:
-branches:
-- main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-validate:
-runs-on: ubuntu-latest
+  validate:
+    runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  - name: Validate HTML Exists
-    run: |
-      test -f index.html
+      - name: Validate HTML Exists
+        run: test -f index.html
 
-  - name: Validate CSS Exists
-    run: |
-      test -f style.css
+      - name: Validate CSS Exists
+        run: test -f style.css
 
-  - name: Verify Backend API Exists
-    run: |
-      test -f backend/api/app.py
+      - name: Verify Backend API Exists
+        run: test -f backend/api/app.py
 
-  - name: Verify Requirements File Exists
-    run: |
-      test -f backend/api/requirements.txt
+      - name: Verify Requirements File Exists
+        run: test -f backend/api/requirements.txt
 
-  - name: Verify Backend Dockerfile Exists
-    run: |
-      test -f backend/api/Dockerfile
+      - name: Verify Backend Dockerfile Exists
+        run: test -f backend/api/Dockerfile
 
-  - name: Verify Frontend Dockerfile Exists
-    run: |
-      test -f Dockerfile.frontend
+      - name: Verify Frontend Dockerfile Exists
+        run: test -f Dockerfile.frontend
 
-  - name: Verify Docker Compose Exists
-    run: |
-      test -f docker-compose.yml
+      - name: Verify Docker Compose Exists
+        run: test -f docker-compose.yml
 
-  - name: Verify Terraform Files Exist
-    run: |
-      test -f infrastructure/terraform/main.tf
-      test -f infrastructure/terraform/provider.tf
-      test -f infrastructure/terraform/variables.tf
-      test -f infrastructure/terraform/outputs.tf
+      - name: Verify Terraform Files Exist
+        run: |
+          test -f infrastructure/terraform/main.tf
+          test -f infrastructure/terraform/provider.tf
+          test -f infrastructure/terraform/variables.tf
+          test -f infrastructure/terraform/outputs.tf
 
-  - name: CI Validation Success
-    run: echo "All validations passed successfully"
-```
+      - name: CI Validation Success
+        run: echo "All validations passed successfully"
 
-deploy:
-needs: validate
-runs-on: ubuntu-latest
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
 
-```
-permissions:
-  pages: write
-  id-token: write
+    permissions:
+      pages: write
+      id-token: write
 
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  - name: Setup Pages
-    uses: actions/configure-pages@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-  - name: Upload Site Artifacts
-    uses: actions/upload-pages-artifact@v3
-    with:
-      path: .
+      - name: Upload Site Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
 
-  - name: Deploy to GitHub Pages
-    uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
 
-  - name: Deployment Confirmation
-    run: echo "Deployment completed successfully"
-```
+      - name: Deployment Confirmation
+        run: echo "Deployment completed successfully"
