@@ -1,15 +1,29 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 app = Flask(__name__)
+
+APP_NAME = os.getenv("APP_NAME")
+APP_VERSION = os.getenv("APP_VERSION")
+APP_ENV = os.getenv("APP_ENV")
+
 
 CORS(app)
 
 
 @app.route("/")
 def home():
-    return "Cloud Resume Analyst Backend Running"
-
+    return jsonify({
+         "application":APP_NAME,
+         "version":APP_VERSION,
+         "environment":APP_ENV,
+         "status":"running"
+    })
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
