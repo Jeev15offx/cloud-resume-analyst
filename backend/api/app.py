@@ -1,37 +1,87 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
 from dotenv import load_dotenv
-import os
 
+import os
+import logging
+
+# -----------------------------
+# Load Environment Variables
+# -----------------------------
 load_dotenv()
 
+# -----------------------------
+# Logging Configuration
+# -----------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
+# -----------------------------
+# Flask App
+# -----------------------------
 app = Flask(__name__)
-
-APP_NAME = os.getenv("APP_NAME")
-APP_VERSION = os.getenv("APP_VERSION")
-APP_ENV = os.getenv("APP_ENV")
-
-
 CORS(app)
 
+# -----------------------------
+# Environment Variables
+# -----------------------------
+APP_NAME = os.getenv("APP_NAME", "Cloud Resume Analyst")
+APP_VERSION = os.getenv("APP_VERSION", "1.0")
+APP_ENV = os.getenv("APP_ENV", "development")
 
+logger.info(f"{APP_NAME} Backend Started")
+logger.info(f"Environment: {APP_ENV}")
+
+# -----------------------------
+# Home Endpoint
+# -----------------------------
 @app.route("/")
 def home():
     return jsonify({
-         "application":APP_NAME,
-         "version":APP_VERSION,
-         "environment":APP_ENV,
-         "status":"running"
+        "application": APP_NAME,
+        "version": APP_VERSION,
+        "environment": APP_ENV,
+        "status": "running"
     })
 
+# -----------------------------
+# Health Check Endpoint
+# -----------------------------
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "healthy"
+    })
+
+# -----------------------------
+# Resume Analysis Endpoint
+# -----------------------------
 @app.route("/analyze", methods=["POST"])
 def analyze():
 
     data = request.get_json()
 
+    logger.info("Resume analysis request received")
+
+    if not data:
+        logger.error("No JSON payload received")
+
+        return jsonify({
+            "error": "Invalid request payload"
+        }), 400
+
     resume = data.get("resume", "").lower()
     job = data.get("job", "").lower()
+
+    if resume == "":
+        logger.warning("Empty resume submitted")
+
+    if job == "":
+        logger.warning("Empty job description submitted")
 
     tech_skills = [
         "aws",
@@ -66,22 +116,22 @@ def analyze():
 
             if skill in resume:
                 matched.append(skill)
+
             else:
                 missing.append(skill)
 
-    score = 0
+    total_skills = len(matched) + len(missing)
 
-    if len(matched) + len(missing) > 0:
-        score = int(
-            (len(matched) /
-             (len(matched) + len(missing))) * 100
-        )
+    if total_skills > 0:
+        score = int((len(matched) / total_skills) * 100)
+    else:
+        score = 0
 
     roadmap = []
 
-    for i, skill in enumerate(missing):
+    for index, skill in enumerate(missing):
         roadmap.append(
-            f"Step {i + 1}: Learn {skill}"
+            f"Step {index + 1}: Learn {skill}"
         )
 
     strengths = []
@@ -93,7 +143,7 @@ def analyze():
         strengths.append("Containers")
 
     if "kubernetes" in matched:
-        strengths.append("Orchestration")
+        strengths.append("Container Orchestration")
 
     if "python" in matched:
         strengths.append("Automation")
@@ -110,6 +160,8 @@ def analyze():
     else:
         strength_level = "Beginner"
 
+    logger.info(f"Analysis completed with score: {score}%")
+
     result = {
         "score": score,
         "strength_level": strength_level,
@@ -121,10 +173,11 @@ def analyze():
 
     return jsonify(result)
 
-
+# -----------------------------
+# Run Flask
+# -----------------------------
 if __name__ == "__main__":
     app.run(
-
         host="0.0.0.0",
         port=5000,
         debug=True
