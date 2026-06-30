@@ -1,281 +1,131 @@
-function analyzeResume() {
+async function analyzeResume() {
 
-    let resumeText = document.getElementById("resume").value.toLowerCase().trim();
-    let jobText = document.getElementById("job").value.toLowerCase().trim();
+    let resumeText =
+        document.getElementById("resume").value.trim();
 
-    if (resumeText.length === 0) {
+    let jobText =
+        document.getElementById("job").value.trim();
+
+    if (!resumeText) {
+
         document.getElementById("result").innerHTML =
             "<h3>Please paste your resume.</h3>";
+
         return;
     }
 
-    // Clean text
-    resumeText = resumeText.replace(/[^\w\s]/g, "");
-    jobText = jobText.replace(/[^\w\s]/g, "");
+    try {
 
-    // Stopwords
-    let stopwords = [
-        "the", "is", "and", "a", "an", "with",
-        "for", "to", "of", "in", "on", "at",
-        "by", "from", "looking", "should", "have"
-    ];
+        const response = await fetch(
+            "/api/v1/analyze",
+            {
+                method: "POST",
 
-    // Technical Skills Database
-    let techSkills = [
-        "aws",
-        "azure",
-        "gcp",
-        "cloud",
-        "docker",
-        "kubernetes",
-        "terraform",
-        "ansible",
-        "jenkins",
-        "git",
-        "github",
-        "linux",
-        "bash",
-        "python",
-        "java",
-        "javascript",
-        "react",
-        "node",
-        "mysql",
-        "sql",
-        "mongodb",
-        "devops",
-        "sre",
-        "networking",
-        "security",
-        "cybersecurity",
-        "prometheus",
-        "grafana"
-    ];
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-    // Word Count
-    let wordCount = resumeText.split(/\s+/).length;
-
-    // Resume Section Checks
-    let keywords = [
-        "project",
-        "skills",
-        "experience",
-        "education"
-    ];
-
-    let matchedKeywords = keywords.filter(word =>
-        resumeText.includes(word)
-    );
-
-    // Job Words
-    let jobWords = jobText
-        .split(/\s+/)
-        .filter(word =>
-            word.length > 2 &&
-            !stopwords.includes(word)
+                body: JSON.stringify({
+                    resume: resumeText,
+                    job: jobText
+                })
+            }
         );
 
-    let uniqueJobWords = [...new Set(jobWords)];
+        const api = await response.json();
 
-    // Matches
-    let matchedWords = uniqueJobWords.filter(word =>
-        resumeText.includes(word)
-    );
+        const data = api.data;
 
-    // Technical Matches
-    let techWords = uniqueJobWords.filter(word =>
-        techSkills.includes(word)
-    );
+        let matchedSkills =
+            data.matched_skills.length > 0
+                ? data.matched_skills.join(", ")
+                : "None";
 
-    let matchedTech = techWords.filter(word =>
-        resumeText.includes(word)
-    );
+        let missingSkills =
+            data.missing_skills.length > 0
+                ? data.missing_skills.join(", ")
+                : "None";
 
-    let missingTech = techWords.filter(word =>
-        !resumeText.includes(word)
-    );
+        let strengths =
+            data.strengths.length > 0
+                ? data.strengths.join(", ")
+                : "None";
 
-    // Generic Matches
-    let genericWords = uniqueJobWords.filter(word =>
-        !techSkills.includes(word)
-    );
+        let roadmapHTML = "";
 
-    let missingGeneric = genericWords.filter(word =>
-        !resumeText.includes(word)
-    );
+        if (data.roadmap.length > 0) {
 
-    // Match Percentages
-    let techMatchPercent =
-        techWords.length > 0
-            ? Math.floor(
-                  (matchedTech.length / techWords.length) * 100
-              )
-            : 0;
+            roadmapHTML =
+                "<strong>📚 Recommended Learning Roadmap</strong><br>";
 
-    let overallMatchPercent =
-        uniqueJobWords.length > 0
-            ? Math.floor(
-                  (matchedWords.length / uniqueJobWords.length) * 100
-              )
-            : 0;
+            data.roadmap.forEach(step => {
+                roadmapHTML += `${step}<br>`;
+            });
 
-    let finalScore = Math.floor(
-        (techMatchPercent * 0.7) +
-        (overallMatchPercent * 0.3)
-    );
+            roadmapHTML += "<br>";
+        }
 
-    // Resume Score
-    let score = 0;
-    let feedback = [];
+        window.reportText = `
+Cloud Resume Analyst Report
 
-    if (wordCount >= 80 && wordCount <= 300)
-        score++;
-    else
-        feedback.push("Resume length not optimal");
+Job Match Score: ${data.score}%
 
-    if (matchedKeywords.includes("skills"))
-        score++;
-    else
-        feedback.push("Add skills section");
+Strength Level: ${data.strength_level}
 
-    if (matchedKeywords.includes("project"))
-        score++;
-    else
-        feedback.push("Add projects section");
+Matched Skills:
+${matchedSkills}
 
-    if (matchedKeywords.includes("experience"))
-        score++;
-    else
-        feedback.push("Add experience section");
+Missing Skills:
+${missingSkills}
 
-    if (matchedKeywords.includes("education"))
-        score++;
-    else
-        feedback.push("Add education section");
+Strength Areas:
+${strengths}
 
-    // Resume Strength
-    let strength = "";
-
-    if (score <= 2) {
-        strength = "Beginner";
-    } else if (score <= 4) {
-        strength = "Intermediate";
-    } else {
-        strength = "Strong";
-    }
-
-    // Learning Roadmap
-    let roadmapHTML = "";
-
-    if (missingTech.length > 0) {
-
-        roadmapHTML =
-            "<strong>📚 Recommended Learning Roadmap</strong><br>";
-
-        missingTech.forEach((skill, index) => {
-            roadmapHTML +=
-                `Step ${index + 1}: ${skill}<br>`;
-        });
-
-        roadmapHTML += "<br>";
-    }
-
-    // Save report for download
-    window.reportText = `
-Analysis Result
-
-Word Count: ${wordCount}
-
-Resume Score: ${score}/5
-
-Resume Strength: ${strength}
-
-Job Match: ${finalScore}%
-
-Tech Match: ${techMatchPercent}%
-
-Overall Match: ${overallMatchPercent}%
-
-Matched Technical Skills:
-${matchedTech.join(", ") || "None"}
-
-Missing Technical Skills:
-${missingTech.join(", ") || "None"}
-
-Missing Keywords:
-${missingGeneric.join(", ") || "None"}
-
-Feedback:
-${feedback.join(", ") || "Strong Resume"}
+Learning Roadmap:
+${data.roadmap.join("\n")}
 `;
 
-    // Display Result
-    document.getElementById("result").innerHTML = `
-        <h3>Analysis Result</h3>
+        document.getElementById("result").innerHTML = `
+            <h3>Analysis Result</h3>
 
-        <strong>Word Count:</strong> ${wordCount}<br><br>
+            <strong>Job Match:</strong>
+            ${data.score}%<br>
 
-        <strong>Resume Score:</strong> ${score}/5<br>
-        <progress value="${score}" max="5"></progress><br><br>
+            <progress
+                value="${data.score}"
+                max="100">
+            </progress>
 
-        <strong>Resume Strength:</strong> ${strength}<br><br>
+            <br><br>
 
-        <strong>Job Match:</strong> ${finalScore}%<br>
-        <progress value="${finalScore}" max="100"></progress><br><br>
+            <strong>Resume Strength:</strong>
+            ${data.strength_level}
 
-        <strong>🔹 Tech Match:</strong> ${techMatchPercent}%<br>
-        <strong>🔸 Overall Match:</strong> ${overallMatchPercent}%<br><br>
+            <br><br>
 
-        <strong>✅ Matched Technical Skills</strong><br>
-        ${matchedTech.join(", ") || "None"}<br><br>
+            <strong>✅ Matched Skills</strong><br>
+            ${matchedSkills}
 
-        <strong>❌ Missing Technical Skills</strong><br>
-        ${missingTech.join(", ") || "None"}<br><br>
+            <br><br>
 
-        <strong>🏆 Top Strengths</strong><br>
-        ${matchedTech.length ? matchedTech.join(", ") : "None"}<br><br>
+            <strong>❌ Missing Skills</strong><br>
+            ${missingSkills}
 
-        <strong>📈 Improvement Areas</strong><br>
-        ${
-            missingTech.length
-                ? missingTech.map(skill => `Add ${skill}`).join("<br>")
-                : "None"
-        }<br><br>
+            <br><br>
 
-        ${roadmapHTML}
+            <strong>🏆 Top Strength Areas</strong><br>
+            ${strengths}
 
-        <strong>⚠ Missing Keywords</strong><br>
-        ${missingGeneric.join(", ") || "None"}<br><br>
+            <br><br>
 
-        <strong>Feedback</strong><br>
-        ${feedback.length
-            ? feedback.join("<br>")
-            : "Strong Resume"}
-    `;
-}
+            ${roadmapHTML}
+        `;
 
-// Download Report
-function downloadReport() {
+    } catch (error) {
 
-    if (!window.reportText) {
-        alert("Please analyze a resume first.");
-        return;
+        console.error(error);
+
+        document.getElementById("result").innerHTML =
+            "<h3>Backend connection failed.</h3>";
     }
-
-    let blob = new Blob(
-        [window.reportText],
-        { type: "text/plain" }
-    );
-
-    let link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-
-    link.download = "resume-analysis-report.txt";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
 }

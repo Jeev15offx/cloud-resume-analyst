@@ -1,0 +1,27 @@
+services:
+
+  backend:
+    build:
+      context: ./backend/api
+
+    container_name: cloud-resume-backend
+
+    env_file:
+      - .env
+
+    expose:
+      - "5000"
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+
+    container_name: cloud-resume-frontend
+
+    ports:
+      - "8000:80"
+
+    restart: unless-stopped
