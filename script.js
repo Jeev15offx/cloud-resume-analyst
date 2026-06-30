@@ -17,7 +17,7 @@ async function analyzeResume() {
     try {
 
         const response = await fetch(
-            "api/analyze",
+            "/api/v1/analyze",
             {
                 method: "POST",
 
@@ -32,20 +32,22 @@ async function analyzeResume() {
             }
         );
 
-        const data = await response.json();
+        const api = await response.json();
+
+        const data = api.data;
 
         let matchedSkills =
-            data.matched_skills.length
+            data.matched_skills.length > 0
                 ? data.matched_skills.join(", ")
                 : "None";
 
         let missingSkills =
-            data.missing_skills.length
+            data.missing_skills.length > 0
                 ? data.missing_skills.join(", ")
                 : "None";
 
         let strengths =
-            data.strengths.length
+            data.strengths.length > 0
                 ? data.strengths.join(", ")
                 : "None";
 
@@ -126,36 +128,4 @@ ${data.roadmap.join("\n")}
         document.getElementById("result").innerHTML =
             "<h3>Backend connection failed.</h3>";
     }
-}
-
-
-// Download Report
-
-function downloadReport() {
-
-    if (!window.reportText) {
-
-        alert("Please analyze a resume first.");
-
-        return;
-    }
-
-    let blob = new Blob(
-        [window.reportText],
-        { type: "text/plain" }
-    );
-
-    let link = document.createElement("a");
-
-    link.href =
-        URL.createObjectURL(blob);
-
-    link.download =
-        "resume-analysis-report.txt";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
 }

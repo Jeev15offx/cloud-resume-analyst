@@ -37,30 +37,50 @@ logger.info(f"{APP_NAME} Backend Started")
 logger.info(f"Environment: {APP_ENV}")
 
 # -----------------------------
+# Standard API Response
+# -----------------------------
+def api_response(success, message, data=None):
+    return jsonify({
+        "success": success,
+        "message": message,
+        "data": data
+    })
+
+# -----------------------------
 # Home Endpoint
 # -----------------------------
-@app.route("/")
+@app.route("/api/v1/")
 def home():
-    return jsonify({
-        "application": APP_NAME,
-        "version": APP_VERSION,
-        "environment": APP_ENV,
-        "status": "running"
-    })
+
+    return api_response(
+        success=True,
+        message="Application is running",
+        data={
+            "application": APP_NAME,
+            "version": APP_VERSION,
+            "environment": APP_ENV,
+            "status": "running"
+        }
+    )
 
 # -----------------------------
 # Health Check Endpoint
 # -----------------------------
-@app.route("/health")
+@app.route("/api/v1/health")
 def health():
-    return jsonify({
-        "status": "healthy"
-    })
+
+    return api_response(
+        success=True,
+        message="Health check successful",
+        data={
+            "status": "healthy"
+        }
+    )
 
 # -----------------------------
 # Resume Analysis Endpoint
 # -----------------------------
-@app.route("/analyze", methods=["POST"])
+@app.route("/api/v1/analyze", methods=["POST"])
 def analyze():
 
     data = request.get_json()
@@ -68,11 +88,14 @@ def analyze():
     logger.info("Resume analysis request received")
 
     if not data:
+
         logger.error("No JSON payload received")
 
-        return jsonify({
-            "error": "Invalid request payload"
-        }), 400
+        return api_response(
+            success=False,
+            message="Invalid request payload",
+            data=None
+        ), 400
 
     resume = data.get("resume", "").lower()
     job = data.get("job", "").lower()
@@ -130,6 +153,7 @@ def analyze():
     roadmap = []
 
     for index, skill in enumerate(missing):
+
         roadmap.append(
             f"Step {index + 1}: Learn {skill}"
         )
@@ -160,8 +184,9 @@ def analyze():
     else:
         strength_level = "Beginner"
 
-    logger.info(f"Analysis completed with score: {score}%")
-
+    # -----------------------------
+    # Final Result
+    # -----------------------------
     result = {
         "score": score,
         "strength_level": strength_level,
@@ -171,12 +196,19 @@ def analyze():
         "roadmap": roadmap
     }
 
-    return jsonify(result)
+    logger.info(f"Analysis completed with score: {score}%")
+
+    return api_response(
+        success=True,
+        message="Resume analysis completed successfully",
+        data=result
+    )
 
 # -----------------------------
 # Run Flask
 # -----------------------------
 if __name__ == "__main__":
+
     app.run(
         host="0.0.0.0",
         port=5000,
